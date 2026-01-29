@@ -34,6 +34,19 @@ export async function setAnthropicApiKey(key: string, agentDir?: string) {
   });
 }
 
+export async function setArkApiKey(key: string, agentDir?: string) {
+  // Write to resolved agent dir so gateway finds credentials on startup.
+  upsertAuthProfile({
+    profileId: "ark:default",
+    credential: {
+      type: "api_key",
+      provider: "ark",
+      key,
+    },
+    agentDir: resolveAuthAgentDir(agentDir),
+  });
+}
+
 export async function setGeminiApiKey(key: string, agentDir?: string) {
   // Write to resolved agent dir so gateway finds credentials on startup.
   upsertAuthProfile({
@@ -112,6 +125,7 @@ export async function setVeniceApiKey(key: string, agentDir?: string) {
   });
 }
 
+export const ARK_DEFAULT_MODEL_REF = "ark/doubao-seed-1-8-251228";
 export const ZAI_DEFAULT_MODEL_REF = "zai/glm-4.7";
 export const OPENROUTER_DEFAULT_MODEL_REF = "openrouter/auto";
 export const VERCEL_AI_GATEWAY_DEFAULT_MODEL_REF = "vercel-ai-gateway/anthropic/claude-opus-4.5";

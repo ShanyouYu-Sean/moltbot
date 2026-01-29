@@ -12,6 +12,7 @@ import {
 } from "../agents/venice-models.js";
 import type { MoltbotConfig } from "../config/config.js";
 import {
+  ARK_DEFAULT_MODEL_REF,
   OPENROUTER_DEFAULT_MODEL_REF,
   VERCEL_AI_GATEWAY_DEFAULT_MODEL_REF,
   ZAI_DEFAULT_MODEL_REF,
@@ -69,6 +70,47 @@ export function applyOpenrouterProviderConfig(cfg: MoltbotConfig): MoltbotConfig
       defaults: {
         ...cfg.agents?.defaults,
         models,
+      },
+    },
+  };
+}
+
+export function applyArkProviderConfig(cfg: MoltbotConfig): MoltbotConfig {
+  const models = { ...cfg.agents?.defaults?.models };
+  models[ARK_DEFAULT_MODEL_REF] = {
+    ...models[ARK_DEFAULT_MODEL_REF],
+    alias: models[ARK_DEFAULT_MODEL_REF]?.alias ?? "Ark",
+  };
+
+  return {
+    ...cfg,
+    agents: {
+      ...cfg.agents,
+      defaults: {
+        ...cfg.agents?.defaults,
+        models,
+      },
+    },
+  };
+}
+
+export function applyArkConfig(cfg: MoltbotConfig): MoltbotConfig {
+  const next = applyArkProviderConfig(cfg);
+  const existingModel = next.agents?.defaults?.model;
+  return {
+    ...next,
+    agents: {
+      ...next.agents,
+      defaults: {
+        ...next.agents?.defaults,
+        model: {
+          ...(existingModel && "fallbacks" in (existingModel as Record<string, unknown>)
+            ? {
+                fallbacks: (existingModel as { fallbacks?: string[] }).fallbacks,
+              }
+            : undefined),
+          primary: ARK_DEFAULT_MODEL_REF,
+        },
       },
     },
   };

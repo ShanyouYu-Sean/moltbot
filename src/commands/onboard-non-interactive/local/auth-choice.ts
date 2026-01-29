@@ -8,6 +8,7 @@ import { buildTokenProfileId, validateAnthropicSetupToken } from "../../auth-tok
 import { applyGoogleGeminiModelDefault } from "../../google-gemini-model-default.js";
 import {
   applyAuthProfileConfig,
+  applyArkConfig,
   applyKimiCodeConfig,
   applyMinimaxApiConfig,
   applyMinimaxConfig,
@@ -19,6 +20,7 @@ import {
   applyVercelAiGatewayConfig,
   applyZaiConfig,
   setAnthropicApiKey,
+  setArkApiKey,
   setGeminiApiKey,
   setKimiCodeApiKey,
   setMinimaxApiKey,
@@ -193,6 +195,25 @@ export async function applyNonInteractiveAuthChoice(params: {
     process.env.OPENAI_API_KEY = key;
     runtime.log(`Saved OPENAI_API_KEY to ${shortenHomePath(result.path)}`);
     return nextConfig;
+  }
+
+  if (authChoice === "ark-api-key") {
+    const resolved = await resolveNonInteractiveApiKey({
+      provider: "ark",
+      cfg: baseConfig,
+      flagValue: opts.arkApiKey,
+      flagName: "--ark-api-key",
+      envVar: "ARK_API_KEY",
+      runtime,
+    });
+    if (!resolved) return null;
+    if (resolved.source !== "profile") await setArkApiKey(resolved.key);
+    nextConfig = applyAuthProfileConfig(nextConfig, {
+      profileId: "ark:default",
+      provider: "ark",
+      mode: "api_key",
+    });
+    return applyArkConfig(nextConfig);
   }
 
   if (authChoice === "openrouter-api-key") {
