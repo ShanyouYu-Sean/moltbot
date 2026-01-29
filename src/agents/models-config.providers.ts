@@ -75,6 +75,17 @@ const OLLAMA_DEFAULT_COST = {
   cacheWrite: 0,
 };
 
+const ARK_BASE_URL = "https://ark.cn-beijing.volces.com/api/v3";
+const ARK_DEFAULT_MODEL_ID = "doubao-seed-1-8-251228";
+const ARK_DEFAULT_CONTEXT_WINDOW = 128000;
+const ARK_DEFAULT_MAX_TOKENS = 8192;
+const ARK_DEFAULT_COST = {
+  input: 0,
+  output: 0,
+  cacheRead: 0,
+  cacheWrite: 0,
+};
+
 interface OllamaModel {
   name: string;
   modified_at: string;
@@ -341,6 +352,24 @@ function buildSyntheticProvider(): ProviderConfig {
   };
 }
 
+function buildArkProvider(): ProviderConfig {
+  return {
+    baseUrl: ARK_BASE_URL,
+    api: "openai-responses",
+    models: [
+      {
+        id: ARK_DEFAULT_MODEL_ID,
+        name: "Doubao Seed 1.8",
+        reasoning: false,
+        input: ["text", "image"],
+        cost: ARK_DEFAULT_COST,
+        contextWindow: ARK_DEFAULT_CONTEXT_WINDOW,
+        maxTokens: ARK_DEFAULT_MAX_TOKENS,
+      },
+    ],
+  };
+}
+
 async function buildVeniceProvider(): Promise<ProviderConfig> {
   const models = await discoverVeniceModels();
   return {
@@ -393,6 +422,13 @@ export async function resolveImplicitProviders(params: {
     resolveApiKeyFromProfiles({ provider: "synthetic", store: authStore });
   if (syntheticKey) {
     providers.synthetic = { ...buildSyntheticProvider(), apiKey: syntheticKey };
+  }
+
+  const arkKey =
+    resolveEnvApiKeyVarName("ark") ??
+    resolveApiKeyFromProfiles({ provider: "ark", store: authStore });
+  if (arkKey) {
+    providers.ark = { ...buildArkProvider(), apiKey: arkKey };
   }
 
   const veniceKey =

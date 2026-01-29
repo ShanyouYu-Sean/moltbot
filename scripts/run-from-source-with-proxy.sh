@@ -10,6 +10,8 @@ Options:
   --http-proxy <url>     Set http_proxy (and HTTP_PROXY)
   --https-proxy <url>    Set https_proxy (and HTTPS_PROXY)
   --proxy <url>          Set both http_proxy and https_proxy
+  --ark-api-key <key>    Set ARK_API_KEY for Ark provider
+  --brave-api-key <key>  Set BRAVE_API_KEY for web search
   --skip-install         Skip pnpm install + pnpm ui:build
   --skip-build           Skip pnpm build
   --skip-onboard         Skip pnpm moltbot onboard --install-daemon
@@ -24,6 +26,8 @@ EOF
 
 http_proxy_override=""
 https_proxy_override=""
+ark_api_key_override=""
+brave_api_key_override=""
 skip_install=0
 skip_build=0
 skip_onboard=0
@@ -41,6 +45,14 @@ while [[ $# -gt 0 ]]; do
     --proxy)
       http_proxy_override="${2:-}"
       https_proxy_override="${2:-}"
+      shift 2
+      ;;
+    --ark-api-key)
+      ark_api_key_override="${2:-}"
+      shift 2
+      ;;
+    --brave-api-key)
+      brave_api_key_override="${2:-}"
       shift 2
       ;;
     --skip-install)
@@ -78,6 +90,8 @@ cd "$ROOT_DIR"
 
 http_proxy_value="${http_proxy_override:-${HTTP_PROXY:-${http_proxy:-}}}"
 https_proxy_value="${https_proxy_override:-${HTTPS_PROXY:-${https_proxy:-}}}"
+ark_api_key_value="${ark_api_key_override:-${ARK_API_KEY:-}}"
+brave_api_key_value="${brave_api_key_override:-${BRAVE_API_KEY:-}}"
 
 if [[ -n "$http_proxy_value" ]]; then
   export http_proxy="$http_proxy_value"
@@ -91,6 +105,16 @@ fi
 
 export no_proxy="ivolces.com,127.0.0.1,localhost,byted.org"
 export NO_PROXY="ivolces.com,127.0.0.1,localhost,byted.org"
+
+
+if [[ -n "$ark_api_key_value" ]]; then
+  export ARK_API_KEY="$ark_api_key_value"
+fi
+
+if [[ -n "$brave_api_key_value" ]]; then
+  export BRAVE_API_KEY="$brave_api_key_value"
+fi
+
 
 if [[ "$skip_install" -eq 0 ]]; then
   pnpm install

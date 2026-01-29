@@ -51,6 +51,7 @@ describe("models-config", () => {
       const previousKimiCode = process.env.KIMICODE_API_KEY;
       const previousMinimax = process.env.MINIMAX_API_KEY;
       const previousMoonshot = process.env.MOONSHOT_API_KEY;
+      const previousArk = process.env.ARK_API_KEY;
       const previousSynthetic = process.env.SYNTHETIC_API_KEY;
       const previousVenice = process.env.VENICE_API_KEY;
       delete process.env.COPILOT_GITHUB_TOKEN;
@@ -59,6 +60,7 @@ describe("models-config", () => {
       delete process.env.KIMICODE_API_KEY;
       delete process.env.MINIMAX_API_KEY;
       delete process.env.MOONSHOT_API_KEY;
+      delete process.env.ARK_API_KEY;
       delete process.env.SYNTHETIC_API_KEY;
       delete process.env.VENICE_API_KEY;
 
@@ -89,6 +91,8 @@ describe("models-config", () => {
         else process.env.MINIMAX_API_KEY = previousMinimax;
         if (previousMoonshot === undefined) delete process.env.MOONSHOT_API_KEY;
         else process.env.MOONSHOT_API_KEY = previousMoonshot;
+        if (previousArk === undefined) delete process.env.ARK_API_KEY;
+        else process.env.ARK_API_KEY = previousArk;
         if (previousSynthetic === undefined) delete process.env.SYNTHETIC_API_KEY;
         else process.env.SYNTHETIC_API_KEY = previousSynthetic;
         if (previousVenice === undefined) delete process.env.VENICE_API_KEY;
@@ -144,6 +148,39 @@ describe("models-config", () => {
       } finally {
         if (prevKey === undefined) delete process.env.MINIMAX_API_KEY;
         else process.env.MINIMAX_API_KEY = prevKey;
+      }
+    });
+  });
+  it("adds ark provider when ARK_API_KEY is set", async () => {
+    await withTempHome(async () => {
+      vi.resetModules();
+      const prevKey = process.env.ARK_API_KEY;
+      process.env.ARK_API_KEY = "sk-ark-test";
+      try {
+        const { ensureMoltbotModelsJson } = await import("./models-config.js");
+        const { resolveMoltbotAgentDir } = await import("./agent-paths.js");
+
+        await ensureMoltbotModelsJson({});
+
+        const modelPath = path.join(resolveMoltbotAgentDir(), "models.json");
+        const raw = await fs.readFile(modelPath, "utf8");
+        const parsed = JSON.parse(raw) as {
+          providers: Record<
+            string,
+            {
+              baseUrl?: string;
+              apiKey?: string;
+              models?: Array<{ id: string }>;
+            }
+          >;
+        };
+        expect(parsed.providers.ark?.baseUrl).toBe("https://ark.cn-beijing.volces.com/api/v3");
+        expect(parsed.providers.ark?.apiKey).toBe("ARK_API_KEY");
+        const ids = parsed.providers.ark?.models?.map((model) => model.id);
+        expect(ids).toContain("doubao-seed-1-8-251228");
+      } finally {
+        if (prevKey === undefined) delete process.env.ARK_API_KEY;
+        else process.env.ARK_API_KEY = prevKey;
       }
     });
   });
