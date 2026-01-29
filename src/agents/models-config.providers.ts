@@ -355,7 +355,7 @@ function buildSyntheticProvider(): ProviderConfig {
 function buildArkProvider(): ProviderConfig {
   return {
     baseUrl: ARK_BASE_URL,
-    api: "openai-responses",
+    api: "openai-completions",
     models: [
       {
         id: ARK_DEFAULT_MODEL_ID,
