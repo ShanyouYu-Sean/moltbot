@@ -89,6 +89,9 @@ if [[ -n "$https_proxy_value" ]]; then
   export HTTPS_PROXY="$https_proxy_value"
 fi
 
+export no_proxy="ivolces.com,127.0.0.1,localhost,byted.org"
+export NO_PROXY="ivolces.com,127.0.0.1,localhost,byted.org"
+
 if [[ "$skip_install" -eq 0 ]]; then
   pnpm install
   pnpm ui:build
