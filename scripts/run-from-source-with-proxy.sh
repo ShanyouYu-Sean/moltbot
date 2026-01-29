@@ -93,40 +93,45 @@ https_proxy_value="${https_proxy_override:-${HTTPS_PROXY:-${https_proxy:-}}}"
 ark_api_key_value="${ark_api_key_override:-${ARK_API_KEY:-}}"
 brave_api_key_value="${brave_api_key_override:-${BRAVE_API_KEY:-}}"
 
+env_args=()
 if [[ -n "$http_proxy_value" ]]; then
   export http_proxy="$http_proxy_value"
   export HTTP_PROXY="$http_proxy_value"
+  env_args+=("http_proxy=$http_proxy_value" "HTTP_PROXY=$http_proxy_value")
 fi
 
 if [[ -n "$https_proxy_value" ]]; then
   export https_proxy="$https_proxy_value"
   export HTTPS_PROXY="$https_proxy_value"
+  env_args+=("https_proxy=$https_proxy_value" "HTTPS_PROXY=$https_proxy_value")
 fi
 
 export no_proxy="ivolces.com,127.0.0.1,localhost,byted.org"
 export NO_PROXY="ivolces.com,127.0.0.1,localhost,byted.org"
-
+env_args+=("no_proxy=ivolces.com,127.0.0.1,localhost,byted.org" "NO_PROXY=ivolces.com,127.0.0.1,localhost,byted.org")
 
 if [[ -n "$ark_api_key_value" ]]; then
   export ARK_API_KEY="$ark_api_key_value"
+  env_args+=("ARK_API_KEY=$ark_api_key_value")
 fi
 
 if [[ -n "$brave_api_key_value" ]]; then
   export BRAVE_API_KEY="$brave_api_key_value"
+  env_args+=("BRAVE_API_KEY=$brave_api_key_value")
 fi
 
 
 if [[ "$skip_install" -eq 0 ]]; then
-  pnpm install
-  pnpm ui:build
+  env "${env_args[@]}" pnpm install
+  env "${env_args[@]}" pnpm ui:build
 fi
 
 if [[ "$skip_build" -eq 0 ]]; then
-  pnpm build
+  env "${env_args[@]}" pnpm build
 fi
 
 if [[ "$skip_onboard" -eq 0 ]]; then
-  pnpm moltbot onboard --install-daemon
+  env "${env_args[@]}" pnpm moltbot onboard --install-daemon
 fi
 
-exec pnpm gateway:watch
+exec env "${env_args[@]}" pnpm gateway:watch
