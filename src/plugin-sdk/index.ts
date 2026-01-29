@@ -79,6 +79,10 @@ export type {
   BlockStreamingCoalesceConfig,
   DmPolicy,
   DmConfig,
+  FeishuAccountConfig,
+  FeishuConfig,
+  FeishuDmConfig,
+  FeishuGroupConfig,
   GroupPolicy,
   GroupToolPolicyConfig,
   GroupToolPolicyBySenderConfig,
@@ -96,6 +100,7 @@ export type {
 } from "../config/types.js";
 export {
   DiscordConfigSchema,
+  FeishuConfigSchema,
   GoogleChatConfigSchema,
   IMessageConfigSchema,
   MSTeamsConfigSchema,
@@ -157,6 +162,7 @@ export { resolveControlCommandGate } from "../channels/command-gating.js";
 export {
   resolveBlueBubblesGroupRequireMention,
   resolveDiscordGroupRequireMention,
+  resolveFeishuGroupRequireMention,
   resolveGoogleChatGroupRequireMention,
   resolveIMessageGroupRequireMention,
   resolveSlackGroupRequireMention,
@@ -164,6 +170,7 @@ export {
   resolveWhatsAppGroupRequireMention,
   resolveBlueBubblesGroupToolPolicy,
   resolveDiscordGroupToolPolicy,
+  resolveFeishuGroupToolPolicy,
   resolveGoogleChatGroupToolPolicy,
   resolveIMessageGroupToolPolicy,
   resolveSlackGroupToolPolicy,
