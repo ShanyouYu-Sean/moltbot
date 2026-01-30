@@ -513,26 +513,55 @@ export async function startFeishuMonitor(opts: FeishuMonitorOptions): Promise<()
     },
   });
 
-  await Promise.resolve(
-    wsClient.start({
-      eventDispatcher: dispatcher,
-    }),
-  );
-
-  const abortHandler = () => {
-    void stopFeishuWsClient(wsClient, opts.runtime);
-  };
-  if (opts.abortSignal.aborted) {
-    abortHandler();
-  } else {
-    opts.abortSignal.addEventListener("abort", abortHandler, { once: true });
+  try {
+    await Promise.resolve(
+      wsClient.start({
+        eventDispatcher: dispatcher,
+      }),
+    );
+  } catch (err) {
+    opts.runtime.error?.(
+      `[${opts.account.accountId}] Feishu WS start failed: ${String(err)}`,
+    );
+    throw err;
   }
 
+  const abortHandler = () => {
+    logVerbose(core, opts.runtime, `Feishu WS abort received (${opts.account.accountId})`);
+    void stopFeishuWsClient(wsClient, opts.runtime);
+  };
+
+  opts.runtime.log?.(
+    `[${opts.account.accountId}] Feishu WS connected`,
+  );
   logVerbose(core, opts.runtime, `Feishu WS connected for account=${opts.account.accountId}`);
 
+  let onAbort: (() => void) | null = null;
+  await new Promise<void>((resolve) => {
+    onAbort = () => {
+      try {
+        abortHandler();
+      } finally {
+        resolve();
+      }
+    };
+    if (opts.abortSignal.aborted) {
+      onAbort();
+      return;
+    }
+    opts.abortSignal.addEventListener("abort", onAbort, { once: true });
+  });
+
+  opts.runtime.log?.(
+    `[${opts.account.accountId}] Feishu WS stopped`,
+  );
+  logVerbose(core, opts.runtime, `Feishu WS stopped for account=${opts.account.accountId}`);
+
   return () => {
-    opts.abortSignal.removeEventListener("abort", abortHandler);
+    if (onAbort) {
+      opts.abortSignal.removeEventListener("abort", onAbort);
+    }
     void stopFeishuWsClient(wsClient, opts.runtime);
-    logVerbose(core, opts.runtime, `Feishu WS stopped for account=${opts.account.accountId}`);
+    logVerbose(core, opts.runtime, `Feishu WS stop invoked for account=${opts.account.accountId}`);
   };
 }
